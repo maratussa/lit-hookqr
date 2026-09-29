@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIT-HOOK QR - Sistem Pancingan Minat Baca Perpustakaan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between custom-scrollbar">
+
+    <!-- Header / Navbar -->
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('catalog')">
+                <div class="bg-amber-400 text-slate-900 p-2 rounded-xl font-black text-xl shadow-md">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight leading-none">LIT-HOOK QR</h1>
+                    <p class="text-[11px] text-blue-200">Interactive QR Teaser System 2026</p>
+                </div>
+            </div>
+            
+            <nav class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="switchView('catalog')" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30">
+                    <i class="fa-solid fa-book-open mr-1.5"></i> Katalog
+                </button>
+                <button onclick="openScannerModal()" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-amber-400 text-slate-900 hover:bg-amber-300 shadow-md">
+                    <i class="fa-solid fa-camera mr-1.5"></i> Scan QR
+                </button>
+                <button onclick="handleAdminAccess()" id="btn-nav-admin" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-900/60 hover:bg-slate-900/80 text-white border border-white/20">
+                    <i class="fa-solid fa-user-shield mr-1.5"></i> <span id="admin-btn-label">Admin Login</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- VIEW 1: KATALOG BUKU SISWA -->
+        <section id="view-catalog" class="space-y-6">
+            <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-3 text-center md:text-left z-10 max-w-2xl">
+                    <span class="bg-amber-400 text-slate-900 font-black text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow">Bersama Nala Wujudkan Generasi Sadar Literasi</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">Penasaran Akhir Ceritanya?</h2>
+                    <p class="text-blue-100 text-xs sm:text-sm leading-relaxed">
+                        Temukan jawabannya di rak buku perpustakaan! Pindai stiker QR-Code pada kover buku fisik untuk mengintip Review Versi Komik Webtoon Bab 1–3, Video Trailer, & Infografis.
+                    </p>
+                </div>
+                <button onclick="openScannerModal()" class="z-10 bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold px-6 py-4 rounded-2xl transition shadow-xl shrink-0 flex items-center space-x-3 transform hover:scale-105">
+                    <i class="fa-solid fa-qrcode text-2xl"></i>
+                    <span class="text-sm">Scan QR Sampul Buku</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-200 pb-4">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> Koleksi Teaser Pilihan
+                </h3>
+                <div class="w-full sm:w-80 relative">
+                    <input type="text" id="search-input" onkeyup="filterBooks()" placeholder="Cari judul, pengarang, DDC..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                </div>
+            </div>
+
+            <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Inserted via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: MULTI-FORMAT TEASER (VIDEO, REVIU KOMIK, INFOGRAFIS) -->
+        <section id="view-teaser" class="hidden space-y-6">
+            <button onclick="switchView('catalog')" class="text-blue-600 font-bold text-sm flex items-center gap-2 hover:underline">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog Utama
+            </button>
+
+            <div id="teaser-content-container">
+                <!-- Inserted via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: DASHBOARD ADMIN PUSTAKAWAN -->
+        <section id="view-dashboard" class="hidden space-y-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="bg-emerald-100 text-emerald-800 font-bold text-xs px-2.5 py-1 rounded-md"><i class="fa-solid fa-shield-check mr-1"></i> Terautentikasi & Aman</span>
+                    <h2 class="text-2xl font-black text-slate-900 mt-1">Dashboard Management LIT-HOOK QR</h2>
+                    <p class="text-xs text-slate-500">Panel admin untuk analisis data, pencetakan QR Code review, dan manajemen koleksi.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddBookModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow">
+                        <i class="fa-solid fa-plus"></i> Tambah Media Buku
+                    </button>
+                    <button onclick="logoutAdmin()" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Clickable Analytics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div onclick="openDetailModal('scans')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center space-x-4 border-l-4 border-l-blue-500 transform hover:-translate-y-1">
+                    <div class="p-3.5 bg-blue-100 text-blue-600 rounded-2xl"><i class="fa-solid fa-qrcode text-2xl"></i></div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <p class="text-xs text-slate-500 font-semibold">Total Scan QR</p>
+                            <i class="fa-solid fa-circle-info text-[10px] text-blue-400"></i>
+                        </div>
+                        <h4 class="text-2xl font-black text-slate-800" id="stat-scans">0</h4>
+                    </div>
+                </div>
+
+                <div onclick="openDetailModal('borrows')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center space-x-4 border-l-4 border-l-emerald-500 transform hover:-translate-y-1">
+                    <div class="p-3.5 bg-emerald-100 text-emerald-600 rounded-2xl"><i class="fa-solid fa-book-bookmark text-2xl"></i></div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <p class="text-xs text-slate-500 font-semibold">Buku Terpinjam</p>
+                            <i class="fa-solid fa-circle-info text-[10px] text-emerald-400"></i>
+                        </div>
+                        <h4 class="text-2xl font-black text-slate-800" id="stat-borrows">0</h4>
+                    </div>
+                </div>
+
+                <div onclick="openDetailModal('conversion')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center space-x-4 border-l-4 border-l-amber-500 transform hover:-translate-y-1">
+                    <div class="p-3.5 bg-amber-100 text-amber-600 rounded-2xl"><i class="fa-solid fa-chart-pie text-2xl"></i></div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <p class="text-xs text-slate-500 font-semibold">Rasio Konversi</p>
+                            <i class="fa-solid fa-circle-info text-[10px] text-amber-400"></i>
+                        </div>
+                        <h4 class="text-2xl font-black text-slate-800" id="stat-conversion">0%</h4>
+                    </div>
+                </div>
+
+                <div onclick="openDetailModal('media')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center space-x-4 border-l-4 border-l-indigo-500 transform hover:-translate-y-1">
+                    <div class="p-3.5 bg-indigo-100 text-indigo-600 rounded-2xl"><i class="fa-solid fa-photo-film text-2xl"></i></div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <p class="text-xs text-slate-500 font-semibold">Total Judul Teaser</p>
+                            <i class="fa-solid fa-circle-info text-[10px] text-indigo-400"></i>
+                        </div>
+                        <h4 class="text-2xl font-black text-slate-800" id="stat-media">0 Judul</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Books & Stiker QR Generator -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-slate-800 text-base">Manajemen Koleksi Teaser & Stiker QR Direct Link</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase">
+                            <tr>
+                                <th class="p-4">Kode DDC</th>
+                                <th class="p-4">Judul Buku</th>
+                                <th class="p-4">Pengarang</th>
+                                <th class="p-4">Lokasi Rak</th>
+                                <th class="p-4">Scan / Pinjam</th>
+                                <th class="p-4 text-center">Stiker QR Direct Link</th>
+                                <th class="p-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-book-table" class="divide-y divide-slate-100">
+                            <!-- Inserted via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-xs text-center space-y-1">
+        <p class="font-bold text-slate-300">LIT-HOOK QR - Interactive QR Teaser System (Inovasi GTK 2026)</p>
+        <p class="text-slate-500">Inovasi Layanan Pustakawan IT dalam Penguatan Literasi & Teknologi Informasi</p>
+    </footer>
+
+    <!-- MODAL DETAIL ANALYTICS -->
+    <div id="modal-detail" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl relative max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b pb-4">
+                <div>
+                    <h3 id="detail-modal-title" class="font-extrabold text-slate-900 text-lg sm:text-xl">Detail Laporan Data</h3>
+                    <p id="detail-modal-subtitle" class="text-xs text-slate-500">Rincian statistik real-time dari sistem LIT-HOOK QR.</p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="detail-modal-body" class="space-y-4">
+                <!-- Content Inserted via JS -->
+            </div>
+
+            <div class="pt-2 text-right">
+                <button onclick="closeDetailModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AMAN: LOGIN ADMIN PUSTAKAWAN -->
+    <div id="modal-login" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="font-black text-slate-900 text-xl">Login Admin Pustakawan</h3>
+                <p class="text-xs text-slate-500">Akses diawasi dengan autentikasi enkripsi terbatas.</p>
+            </div>
+
+            <form onsubmit="processAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+                    <div class="relative">
+                        <input type="text" id="login-username" required placeholder="admin" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fa-solid fa-key absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold text-center">
+                    Kombinasi Username atau Password Salah!
+                </div>
+
+                
+
+                <div class="flex gap-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                        Masuk
+                    </button>
+                    <button type="button" onclick="closeLoginModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-3 rounded-xl text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL SCANNER QR -->
+    <div id="modal-scanner" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-camera text-blue-600"></i> Pindai Stiker QR Buku
+                </h3>
+                <button onclick="closeScannerModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">Arahkan kamera ke stiker QR untuk membuka link review teaser buku.</p>
+            <div id="qr-reader" class="w-full bg-slate-100 rounded-2xl overflow-hidden border-2 border-dashed border-slate-300 min-h-[220px]"></div>
+            <div class="border-t border-slate-100 pt-3 text-center">
+                <p class="text-xs text-slate-400 mb-2">- Atau pilih simulasi scan instan -</p>
+                <div class="flex flex-wrap justify-center gap-2" id="simulated-qr-buttons"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CETAK STIKER QR DIRECT LINK -->
+    <div id="modal-print-qr" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <h3 class="font-extrabold text-slate-800 text-lg">Stiker QR Direct Link Review</h3>
+            
+            <div id="printable-area" class="border-2 border-dashed border-blue-500 p-5 rounded-2xl bg-slate-50 flex flex-col items-center space-y-2">
+                <span class="text-[10px] uppercase tracking-widest font-black text-blue-600">LIT-HOOK QR System</span>
+                <div id="qrcode-container" class="my-2 bg-white p-3 shadow-md rounded-xl"></div>
+                <h4 id="print-book-title" class="font-extrabold text-slate-900 text-sm line-clamp-1">Judul Buku</h4>
+                <p id="print-book-ddc" class="text-xs font-mono bg-blue-100 text-blue-900 px-3 py-1 rounded-full font-bold">DDC: 800</p>
+                <span class="text-[10px] text-slate-500 italic font-medium">"Scan untuk Review Komik, Video & Cliffhanger"</span>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="window.print()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm shadow">
+                    <i class="fa-solid fa-print mr-1.5"></i> Cetak Stiker
+                </button>
+                <button onclick="closePrintModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-sm">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH BUKU (ADMIN ONLY) -->
+    <div id="modal-add-book" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-extrabold text-slate-900 text-lg">Tambah Media Teaser Buku</h3>
+                <button onclick="closeAddBookModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form id="add-book-form" onsubmit="saveNewBook(event)" class="space-y-4 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Judul Buku</label>
+                    <input type="text" id="input-title" required class="w-full p-2.5 border rounded-xl" placeholder="Contoh: Bumi Manusia">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Kode Klasifikasi DDC</label>
+                        <input type="text" id="input-ddc" required class="w-full p-2.5 border rounded-xl font-mono" placeholder="813">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Lokasi Rak Fisik</label>
+                        <input type="text" id="input-shelf" required class="w-full p-2.5 border rounded-xl" placeholder="Rak Fiksi A-02">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Pengarang / Penulis</label>
+                    <input type="text" id="input-author" required class="w-full p-2.5 border rounded-xl" placeholder="Pramoedya Ananta Toer">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">URL Cover Sampul Buku</label>
+                    <input type="url" id="input-cover" required class="w-full p-2.5 border rounded-xl" placeholder="https://images.unsplash.com/...">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">URL Video Short Trailer (MP4)</label>
+                    <input type="url" id="input-video" required class="w-full p-2.5 border rounded-xl" placeholder="https://commondatastorage.googleapis.com/...mp4">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">URL Gambar Review Versi Komik (Pisahkan Koma)</label>
+                    <textarea id="input-comic-urls" rows="2" required class="w-full p-2.5 border rounded-xl" placeholder="https://link-panel1.jpg, https://link-panel2.jpg"></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Peta Tokoh Utama (Pisahkan Koma)</label>
+                    <input type="text" id="input-characters" required class="w-full p-2.5 border rounded-xl" placeholder="Minke, Annelies, Nyai Ontosoroh">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Infografis Bab 1</label>
+                    <input type="text" id="input-bab1" required class="w-full p-2.5 border rounded-xl" placeholder="Pengenalan Minke dan awal pertemuannya dengan Annelies...">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Infografis Bab 2</label>
+                    <input type="text" id="input-bab2" required class="w-full p-2.5 border rounded-xl" placeholder="Kagumnya Minke pada ketegasan Nyai Ontosoroh...">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Infografis Bab 3</label>
+                    <input type="text" id="input-bab3" required class="w-full p-2.5 border rounded-xl" placeholder="Munculnya ancaman hukum kolonial yang merenggut hak mereka...">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Teks Pancingan Cliffhanger</label>
+                    <textarea id="input-cliffhanger" rows="2" required class="w-full p-2.5 border rounded-xl" placeholder="Akankah Minke berhasil mempertahankan cinta dan martabatnya?"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl shadow-lg transition">
+                        Simpan & Generasi Stiker Direct Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // Check session storage for login security
+        let isAdminLoggedIn = sessionStorage.getItem('simpa_admin_auth') === 'true';
+        let html5QrCode = null;
+        let activeTeaserTab = 'comic';
+
+        // Initial Books Database
+        let booksDatabase = [
+            {
+                id: "BK-8001",
+                title: "Laut Bercerita",
+                author: "Leila S. Chudori",
+                ddc: "813",
+                shelf: "Rak Sastra A-01",
+                scans: 8,
+                borrows: 7,
+                cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                comicPanels: [
+                    "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600"
+                ],
+                infographic: {
+                    characters: ["Biru Laut (Aktivis)", "Asmara Jati (Adik)", "Alex Perdana"],
+                    timeline: [
+                        "Bab 1: Penyekapan dingin aktivis mahasiswa di lokasi tak dikenal tahun 1998.",
+                        "Bab 2: Keheningan meja makan keluarga yang menyisakan kursi kosong penuh harapan.",
+                        "Bab 3: Misteri pengkhianat di dalam kelompok yang membocorkan markas."
+                    ],
+                    cliffhanger: "Siapakah sosok pengkhianat yang membocorkan markas mereka? Apakah Biru Laut berhasil pulang secara selamat?"
+                }
+            },
+            {
+                id: "BK-8002",
+                title: "Laskar Pelangi",
+                author: "Andrea Hirata",
+                ddc: "813.01",
+                shelf: "Rak Novel A-03",
+                scans: 5,
+                borrows: 5,
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                comicPanels: [
+                    "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=600"
+                ],
+                infographic: {
+                    characters: ["Ikal", "Lintang (Jenius)", "Mahar (Seniman)", "Bu Mus (Guru)"],
+                    timeline: [
+                        "Bab 1: Pendaftaran cemas murid baru SD Muhammadiyah Gantong yang nyaris ditutup.",
+                        "Bab 2: Perjuangan Lintang menyeberangi sungai berbuaya demi sekolah.",
+                        "Bab 3: Bakat fantastis Mahar dengan radio tua pangkas rambut."
+                    ],
+                    cliffhanger: "Bagaimana nasib SD Muhammadiyah saat menghadapi lomba cerdas cermat melawan sekolah elit?"
+                }
+            }
+        ];
+
+        // Initialization
+        window.onload = function() {
+            renderBookCatalog();
+            renderSimulatedQrButtons();
+            updateAdminButtonUI();
+
+            // Auto Routing if URL params contains review id
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            if (bookId) {
+                openTeaserView(bookId);
+            }
+        };
+
+        // Router View Switcher
+        function switchView(viewName) {
+            if (viewName === 'dashboard' && !isAdminLoggedIn) {
+                openLoginModal();
+                return;
+            }
+
+            document.getElementById('view-catalog').classList.add('hidden');
+            document.getElementById('view-teaser').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+            if (viewName === 'dashboard') {
+                renderAdminTable();
+                updateStats();
+            }
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Handle Admin Authentication
+        function handleAdminAccess() {
+            if (isAdminLoggedIn) {
+                switchView('dashboard');
+            } else {
+                openLoginModal();
+            }
+        }
+
+        function openLoginModal() {
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('modal-login').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        function processAdminLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('login-username').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (user === 'admin' && pass === 'admin123') {
+                isAdminLoggedIn = true;
+                sessionStorage.setItem('simpa_admin_auth', 'true');
+                closeLoginModal();
+                updateAdminButtonUI();
+                switchView('dashboard');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            sessionStorage.removeItem('simpa_admin_auth');
+            updateAdminButtonUI();
+            switchView('catalog');
+            alert("Anda telah keluar dari Sesi Keamanan Admin.");
+        }
+
+        function updateAdminButtonUI() {
+            const btnLabel = document.getElementById('admin-btn-label');
+            const btnNav = document.getElementById('btn-nav-admin');
+            if (isAdminLoggedIn) {
+                btnLabel.innerText = "Dashboard Admin";
+                btnNav.classList.remove('bg-slate-900/60');
+                btnNav.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            } else {
+                btnLabel.innerText = "Admin Login";
+                btnNav.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                btnNav.classList.add('bg-slate-900/60');
+            }
+        }
+
+        // Render Book Catalog
+        function renderBookCatalog(data = booksDatabase) {
+            const grid = document.getElementById('book-grid');
+            grid.innerHTML = '';
+
+            data.forEach(book => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                        <div>
+                            <div class="h-52 overflow-hidden relative">
+                                <img src="${book.cover}" alt="${book.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                                <span class="absolute top-3 right-3 bg-slate-900/90 backdrop-blur text-white font-mono text-xs font-extrabold px-3 py-1 rounded-full border border-white/20">
+                                    DDC ${book.ddc}
+                                </span>
+                                <span class="absolute bottom-3 left-3 bg-amber-400 text-slate-900 font-extrabold text-[11px] px-2.5 py-0.5 rounded-md shadow">
+                                    <i class="fa-solid fa-location-dot mr-1"></i>${book.shelf}
+                                </span>
+                            </div>
+                            <div class="p-5 space-y-2">
+                                <h4 class="font-black text-slate-900 text-lg leading-snug group-hover:text-blue-600 transition">${book.title}</h4>
+                                <p class="text-xs text-slate-500 font-medium">Penulis: <span class="text-slate-800 font-bold">${book.author}</span></p>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-0">
+                            <button onclick="openTeaserView('${book.id}')" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-extrabold py-3 rounded-2xl text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md">
+                                <i class="fa-solid fa-scroll text-amber-400"></i> Review Komik & Teaser
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Open Multi-Format Teaser View
+        function openTeaserView(bookId) {
+            const book = booksDatabase.find(b => b.id === bookId);
+            if (!book) return;
+
+            book.scans++;
+            activeTeaserTab = 'comic';
+
+            renderTeaserDetail(book);
+            switchView('teaser');
+        }
+
+        function switchTeaserTab(tabName, bookId) {
+            activeTeaserTab = tabName;
+            const book = booksDatabase.find(b => b.id === bookId);
+            if(book) renderTeaserDetail(book);
+        }
+
+        function renderTeaserDetail(book) {
+            const container = document.getElementById('teaser-content-container');
+            
+            let tabContent = '';
+            if(activeTeaserTab === 'comic') {
+                tabContent = `
+                    <div class="space-y-4 max-w-lg mx-auto">
+                        <div class="bg-amber-100 border border-amber-300 text-amber-900 p-3 rounded-2xl text-center text-xs font-bold">
+                            <i class="fa-solid fa-scroll mr-1"></i> Scroll ke bawah untuk membaca Review Versi Komik Webtoon Bab 1–3
+                        </div>
+                        <div class="space-y-3 max-h-[520px] overflow-y-auto custom-scrollbar p-2 bg-slate-900 rounded-2xl border border-slate-800">
+                            ${book.comicPanels.map((panelUrl, idx) => `
+                                <div class="relative rounded-xl overflow-hidden shadow">
+                                    <img src="${panelUrl}" alt="Komik Webtoon ${idx+1}" class="w-full h-auto">
+                                    <span class="absolute top-2 left-2 bg-black/80 text-amber-400 font-black text-[10px] px-2.5 py-1 rounded-md">Panel Webtoon ${idx+1}</span>
+                                </div>
+                            `).join('')}
+                            <div class="bg-amber-400 text-slate-900 font-extrabold p-4 rounded-xl text-center text-xs shadow-lg">
+                                🔒 Bersambung ke Versi Buku Cetak Fisik!
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if(activeTeaserTab === 'video') {
+                tabContent = `
+                    <div class="space-y-3">
+                        <div class="bg-slate-900 rounded-2xl overflow-hidden aspect-[9/16] max-h-[480px] mx-auto shadow-2xl relative border-4 border-slate-800 flex items-center justify-center">
+                            <video controls class="w-full h-full object-cover">
+                                <source src="${book.videoUrl}" type="video/mp4">
+                                Video trailer tidak didukung.
+                            </video>
+                        </div>
+                    </div>
+                `;
+            } else if(activeTeaserTab === 'infographic') {
+                tabContent = `
+                    <div class="space-y-6 bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                        <div>
+                            <h4 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider mb-2">Peta Tokoh Utama</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${book.infographic.characters.map(c => `<span class="bg-white border border-slate-200 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">${c}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider mb-2">Ringkasan Alur Bab 1–3</h4>
+                            <div class="space-y-2.5">
+                                ${book.infographic.timeline.map(t => `
+                                    <div class="bg-white p-3.5 rounded-2xl border-l-4 border-blue-600 text-xs text-slate-700 shadow-sm leading-relaxed">
+                                        ${t}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
+                        <div>
+                            <span class="bg-amber-100 text-amber-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Direct Teaser & Review Link</span>
+                            <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">${book.title}</h2>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-1">Penulis: <strong class="text-slate-800">${book.author}</strong> | Kode DDC: <strong class="text-slate-800">${book.ddc}</strong></p>
+                        </div>
+                        <button onclick="simulateBorrow('${book.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3.5 rounded-2xl text-sm shadow-lg flex items-center gap-2 transition shrink-0">
+                            <i class="fa-solid fa-bookmark"></i> Pinjam Buku Fisik Ini
+                        </button>
+                    </div>
+
+                    <!-- Mode Selector Tabs -->
+                    <div class="flex justify-center border-b border-slate-200 gap-2 sm:gap-4 pb-2">
+                        <button onclick="switchTeaserTab('comic', '${book.id}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center gap-2 ${activeTeaserTab === 'comic' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                            <i class="fa-solid fa-scroll"></i> Review Versi Komik
+                        </button>
+                        <button onclick="switchTeaserTab('video', '${book.id}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center gap-2 ${activeTeaserTab === 'video' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                            <i class="fa-solid fa-film"></i> Video Short
+                        </button>
+                        <button onclick="switchTeaserTab('infographic', '${book.id}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center gap-2 ${activeTeaserTab === 'infographic' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                            <i class="fa-solid fa-circle-info"></i> Infografis
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Content -->
+                    <div class="min-h-[350px]">
+                        ${tabContent}
+                    </div>
+
+                    <!-- Cliffhanger Banner -->
+                    <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-3 text-center relative overflow-hidden">
+                        <span class="bg-slate-900/40 text-amber-100 font-mono text-xs px-3.5 py-1 rounded-full uppercase font-black tracking-widest">Cliffhanger Ending</span>
+                        <h3 class="text-2xl sm:text-3xl font-black">${book.infographic.cliffhanger}</h3>
+                        <p class="text-xs sm:text-sm text-amber-100 max-w-xl mx-auto">Cerita dihentikan pada bab paling seru! Baca selengkapnya dengan meminjam versi buku cetaknya.</p>
+                        <div class="pt-3">
+                            <div class="inline-flex items-center gap-2 bg-white text-slate-900 font-black text-sm px-5 py-3 rounded-2xl shadow-xl">
+                                <i class="fa-solid fa-location-dot text-red-500 text-lg"></i>
+                                <span>Lokasi Buku Fisik: ${book.shelf} (Kode DDC ${book.ddc})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function simulateBorrow(bookId) {
+            const book = booksDatabase.find(b => b.id === bookId);
+            if(book) {
+                book.borrows++;
+                alert(`[SISTEM PERPUSTAKAAN]\n\nPeminjaman buku "${book.title}" berhasil dicatat!\nSilakan menuju ke ${book.shelf} dan tunjukkan konfirmasi ini ke Pustakawan.`);
+            }
+        }
+
+        function filterBooks() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = booksDatabase.filter(b => 
+                b.title.toLowerCase().includes(query) || 
+                b.ddc.includes(query) || 
+                b.author.toLowerCase().includes(query)
+            );
+            renderBookCatalog(filtered);
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-book-table');
+            tbody.innerHTML = '';
+
+            booksDatabase.forEach(book => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-mono font-bold text-blue-600">${book.ddc}</td>
+                        <td class="p-4 font-extrabold text-slate-800">${book.title}</td>
+                        <td class="p-4 text-xs font-semibold text-slate-600">${book.author}</td>
+                        <td class="p-4 text-xs font-bold text-slate-700">${book.shelf}</td>
+                        <td class="p-4 text-xs">
+                            <span class="font-bold text-blue-600">${book.scans} Scan</span> / 
+                            <span class="font-bold text-emerald-600">${book.borrows} Pinjam</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="openPrintModal('${book.id}')" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-sm">
+                                <i class="fa-solid fa-qrcode mr-1"></i> Cetak Direct QR
+                            </button>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteBook('${book.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded-lg text-xs font-bold">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteBook(bookId) {
+            if (confirm("Apakah Anda yakin ingin menghapus data buku ini?")) {
+                booksDatabase = booksDatabase.filter(b => b.id !== bookId);
+                renderAdminTable();
+                renderBookCatalog();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const totalScans = booksDatabase.reduce((acc, b) => acc + b.scans, 0);
+            const totalBorrows = booksDatabase.reduce((acc, b) => acc + b.borrows, 0);
+            const conv = totalScans > 0 ? ((totalBorrows / totalScans) * 100).toFixed(1) : "0.0";
+
+            document.getElementById('stat-scans').innerText = totalScans;
+            document.getElementById('stat-borrows').innerText = totalBorrows;
+            document.getElementById('stat-conversion').innerText = `${conv}%`;
+            document.getElementById('stat-media').innerText = `${booksDatabase.length} Judul`;
+        }
+
+        // Open Detail Data Analytics Modal
+        function openDetailModal(type) {
+            const titleEl = document.getElementById('detail-modal-title');
+            const subTitleEl = document.getElementById('detail-modal-subtitle');
+            const bodyEl = document.getElementById('detail-modal-body');
+
+            const totalScans = booksDatabase.reduce((acc, b) => acc + b.scans, 0);
+            const totalBorrows = booksDatabase.reduce((acc, b) => acc + b.borrows, 0);
+
+            let tableRows = '';
+
+            if (type === 'scans') {
+                titleEl.innerText = "Laporan Detail Pemindaian (Scan QR)";
+                subTitleEl.innerText = `Total Pemindaian: ${totalScans} kali oleh siswa.`;
+
+                booksDatabase.forEach(b => {
+                    const percentage = totalScans > 0 ? ((b.scans / totalScans) * 100).toFixed(1) : 0;
+                    tableRows += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-bold text-slate-800 text-xs">${b.title} <span class="text-slate-400 font-normal">(${b.ddc})</span></td>
+                            <td class="p-3 text-xs text-right font-bold text-blue-600">${b.scans} scan</td>
+                            <td class="p-3 text-xs text-right text-slate-500">${percentage}%</td>
+                        </tr>
+                    `;
+                });
+
+                bodyEl.innerHTML = `
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-2xl text-xs text-blue-900 space-y-1">
+                        <p class="font-bold"><i class="fa-solid fa-chart-line mr-1"></i> Analisis Frekuensi Scan:</p>
+                        <p>Daftar peringkat judul buku yang stiker QR-nya paling sering dipindai oleh siswa.</p>
+                    </div>
+                    <div class="overflow-x-auto border rounded-2xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">Judul Buku</th>
+                                    <th class="p-3 text-right">Jumlah Scan</th>
+                                    <th class="p-3 text-right">Kontribusi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else if (type === 'borrows') {
+                titleEl.innerText = "Laporan Detail Peminjaman Fisik";
+                subTitleEl.innerText = `Total Peminjaman: ${totalBorrows} eksemplar buku terpinjam.`;
+
+                booksDatabase.forEach(b => {
+                    tableRows += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-bold text-slate-800 text-xs">${b.title}</td>
+                            <td class="p-3 text-xs font-medium text-slate-600">${b.shelf}</td>
+                            <td class="p-3 text-xs text-right font-bold text-emerald-600">${b.borrows} eksemplar</td>
+                        </tr>
+                    `;
+                });
+
+                bodyEl.innerHTML = `
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-900 space-y-1">
+                        <p class="font-bold"><i class="fa-solid fa-book-bookmark mr-1"></i> Realisasi Peminjaman Fisik:</p>
+                        <p>Buku cetak yang dipinjam siswa setelah membaca review teaser komik dan melihat cliffhanger.</p>
+                    </div>
+                    <div class="overflow-x-auto border rounded-2xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">Judul Buku</th>
+                                    <th class="p-3">Lokasi Rak</th>
+                                    <th class="p-3 text-right">Buku Dipinjam</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else if (type === 'conversion') {
+                titleEl.innerText = "Laporan Efektivitas Rasio Konversi";
+                subTitleEl.innerText = "Mengukur persentase siswa yang meminjam buku setelah memindai QR.";
+
+                booksDatabase.forEach(b => {
+                    const convRate = b.scans > 0 ? ((b.borrows / b.scans) * 100).toFixed(1) : "0.0";
+                    tableRows += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-bold text-slate-800 text-xs">${b.title}</td>
+                            <td class="p-3 text-xs text-center">${b.scans}</td>
+                            <td class="p-3 text-xs text-center">${b.borrows}</td>
+                            <td class="p-3 text-xs text-right font-black text-amber-600">${convRate}%</td>
+                        </tr>
+                    `;
+                });
+
+                bodyEl.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs text-amber-900 space-y-1">
+                        <p class="font-bold"><i class="fa-solid fa-bullseye mr-1"></i> Efektivitas Pancingan:</p>
+                        <p>Persentase keberhasilan media pancingan dalam mendorong siswa meminjam buku fisik.</p>
+                    </div>
+                    <div class="overflow-x-auto border rounded-2xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">Judul Buku</th>
+                                    <th class="p-3 text-center">Scan</th>
+                                    <th class="p-3 text-center">Pinjam</th>
+                                    <th class="p-3 text-right">Rasio Konversi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else if (type === 'media') {
+                titleEl.innerText = "Laporan Kelengkapan Teaser";
+                subTitleEl.innerText = `Total Koleksi: ${booksDatabase.length} judul buku dengan teaser.`;
+
+                booksDatabase.forEach(b => {
+                    tableRows += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-bold text-slate-800 text-xs">${b.title}</td>
+                            <td class="p-3 text-xs font-mono text-blue-600">${b.ddc}</td>
+                            <td class="p-3 text-xs text-center font-bold text-emerald-600"><i class="fa-solid fa-check"></i> Komik + Video + Infografis</td>
+                        </tr>
+                    `;
+                });
+
+                bodyEl.innerHTML = `
+                    <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl text-xs text-indigo-900 space-y-1">
+                        <p class="font-bold"><i class="fa-solid fa-layer-group mr-1"></i> Inventaris Media Teaser:</p>
+                        <p>Daftar seluruh judul yang telah memiliki ulasan komik dan teaser multimedia.</p>
+                    </div>
+                    <div class="overflow-x-auto border rounded-2xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">Judul Buku</th>
+                                    <th class="p-3">DDC</th>
+                                    <th class="p-3 text-center">Status Konten</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('modal-detail').classList.add('hidden');
+        }
+
+        // Camera Scanner Control
+        function openScannerModal() {
+            document.getElementById('modal-scanner').classList.remove('hidden');
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    closeScannerModal();
+                    // Handle Direct Link QR Scanning
+                    if (decodedText.includes('id=')) {
+                        const bookId = decodedText.split('id=')[1];
+                        openTeaserView(bookId);
+                    } else {
+                        openTeaserView(decodedText);
+                    }
+                },
+                (err) => { /* ignore frame errors */ }
+            ).catch(err => {
+                document.getElementById('qr-reader').innerHTML = `
+                    <div class="p-4 text-center text-xs text-slate-500 space-y-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl"></i>
+                        <p>Kamera tidak aktif. Gunakan tombol simulasi di bawah ini.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function closeScannerModal() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('modal-scanner').classList.add('hidden');
+                }).catch(() => {
+                    document.getElementById('modal-scanner').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('modal-scanner').classList.add('hidden');
+            }
+        }
+
+        function renderSimulatedQrButtons() {
+            const container = document.getElementById('simulated-qr-buttons');
+            container.innerHTML = '';
+            booksDatabase.forEach(book => {
+                container.innerHTML += `
+                    <button onclick="closeScannerModal(); openTeaserView('${book.id}')" class="bg-slate-100 hover:bg-blue-50 border border-slate-200 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                        ${book.title}
+                    </button>
+                `;
+            });
+        }
+
+        // Printable Sticker Direct Link Generator Modal
+        function openPrintModal(bookId) {
+            const book = booksDatabase.find(b => b.id === bookId);
+            if(!book) return;
+
+            document.getElementById('print-book-title').innerText = book.title;
+            document.getElementById('print-book-ddc').innerText = `DDC: ${book.ddc}`;
+            
+            const qrContainer = document.getElementById('qrcode-container');
+            qrContainer.innerHTML = '';
+            
+            // Link direct URL to book review page
+            const directReviewUrl = `${window.location.origin}${window.location.pathname}?id=${book.id}`;
+
+            new QRCode(qrContainer, {
+                text: directReviewUrl,
+                width: 140,
+                height: 140
+            });
+
+            document.getElementById('modal-print-qr').classList.remove('hidden');
+        }
+
+        function closePrintModal() {
+            document.getElementById('modal-print-qr').classList.add('hidden');
+        }
+
+        // Add Book Modal Logic
+        function openAddBookModal() {
+            document.getElementById('modal-add-book').classList.remove('hidden');
+        }
+
+        function closeAddBookModal() {
+            document.getElementById('modal-add-book').classList.add('hidden');
+        }
+
+        function saveNewBook(event) {
+            event.preventDefault();
+            const comicUrls = document.getElementById('input-comic-urls').value.split(',').map(u => u.trim());
+            const charactersInput = document.getElementById('input-characters').value.split(',').map(c => c.trim());
+            
+            const newBook = {
+                id: `BK-${Math.floor(1000 + Math.random() * 9000)}`,
+                title: document.getElementById('input-title').value,
+                author: document.getElementById('input-author').value,
+                ddc: document.getElementById('input-ddc').value,
+                shelf: document.getElementById('input-shelf').value,
+                scans: 0,
+                borrows: 0,
+                cover: document.getElementById('input-cover').value,
+                videoUrl: document.getElementById('input-video').value,
+                comicPanels: comicUrls,
+                infographic: {
+                    characters: charactersInput,
+                    timeline: [
+                        `Bab 1: ${document.getElementById('input-bab1').value}`,
+                        `Bab 2: ${document.getElementById('input-bab2').value}`,
+                        `Bab 3: ${document.getElementById('input-bab3').value}`
+                    ],
+                    cliffhanger: document.getElementById('input-cliffhanger').value
+                }
+            };
+
+            booksDatabase.unshift(newBook);
+            closeAddBookModal();
+            renderBookCatalog();
+            renderAdminTable();
+            renderSimulatedQrButtons();
+            updateStats();
+            alert("Media Teaser & Review Komik Berhasil Ditambahkan!");
+        }
+    </script>
+</body>
+</html>
