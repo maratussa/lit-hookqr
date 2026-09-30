@@ -380,70 +380,59 @@
         let activeTeaserTab = 'comic';
 
         // Initial Books Database
-        // Initial Initial Books Database (sebagai data bawaan jika localStorage masih kosong)
-const defaultBooks = [
-    {
-        id: "BK-8001",
-        title: "Laut Bercerita",
-        author: "Leila S. Chudori",
-        ddc: "813",
-        shelf: "Rak Sastra A-01",
-        scans: 8,
-        borrows: 7,
-        cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
-        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        comicPanels: [
-            "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=600",
-            "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=600",
-            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600"
-        ],
-        infographic: {
-            characters: ["Biru Laut (Aktivis)", "Asmara Jati (Adik)", "Alex Perdana"],
-            timeline: [
-                "Bab 1: Penyekapan dingin aktivis mahasiswa di lokasi tak dikenal tahun 1998.",
-                "Bab 2: Keheningan meja makan keluarga yang menyisakan kursi kosong penuh harapan.",
-                "Bab 3: Misteri pengkhianat di dalam kelompok yang membocorkan markas."
-            ],
-            cliffhanger: "Siapakah sosok pengkhianat yang membocorkan markas mereka? Apakah Biru Laut berhasil pulang secara selamat?"
-        }
-    },
-    {
-        id: "BK-8002",
-        title: "Laskar Pelangi",
-        author: "Andrea Hirata",
-        ddc: "813.01",
-        shelf: "Rak Novel A-03",
-        scans: 5,
-        borrows: 5,
-        cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600",
-        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-        comicPanels: [
-            "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=600",
-            "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=600"
-        ],
-        infographic: {
-            characters: ["Ikal", "Lintang (Jenius)", "Mahar (Seniman)", "Bu Mus (Guru)"],
-            timeline: [
-                "Bab 1: Pendaftaran cemas murid baru SD Muhammadiyah Gantong yang nyaris ditutup.",
-                "Bab 2: Perjuangan Lintang menyeberangi sungai berbuaya demi sekolah.",
-                "Bab 3: Bakat fantastis Mahar dengan radio tua pangkas rambut."
-            ],
-            cliffhanger: "Bagaimana nasib SD Muhammadiyah saat menghadapi lomba cerdas cermat melawan sekolah elit?"
-        }
-    }
-];
+        
+        let booksDatabase = [
+            {
+                id: "BK-8001",
+                title: "Laut Bercerita",
+                author: "Leila S. Chudori",
+                ddc: "813",
+                shelf: "Rak Sastra A-01",
+                scans: 8,
+                borrows: 7,
+                cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                comicPanels: [
+                    "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600"
+                ],
+                infographic: {
+                    characters: ["Biru Laut (Aktivis)", "Asmara Jati (Adik)", "Alex Perdana"],
+                    timeline: [
+                        "Bab 1: Penyekapan dingin aktivis mahasiswa di lokasi tak dikenal tahun 1998.",
+                        "Bab 2: Keheningan meja makan keluarga yang menyisakan kursi kosong penuh harapan.",
+                        "Bab 3: Misteri pengkhianat di dalam kelompok yang membocorkan markas."
+                    ],
+                    cliffhanger: "Siapakah sosok pengkhianat yang membocorkan markas mereka? Apakah Biru Laut berhasil pulang secara selamat?"
+                }
+            },
+            {
+                id: "BK-8002",
+                title: "Laskar Pelangi",
+                author: "Andrea Hirata",
+                ddc: "813.01",
+                shelf: "Rak Novel A-03",
+                scans: 5,
+                borrows: 5,
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                comicPanels: [
+                    "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=600",
+                    "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=600"
+                ],
+                infographic: {
+                    characters: ["Ikal", "Lintang (Jenius)", "Mahar (Seniman)", "Bu Mus (Guru)"],
+                    timeline: [
+                        "Bab 1: Pendaftaran cemas murid baru SD Muhammadiyah Gantong yang nyaris ditutup.",
+                        "Bab 2: Perjuangan Lintang menyeberangi sungai berbuaya demi sekolah.",
+                        "Bab 3: Bakat fantastis Mahar dengan radio tua pangkas rambut."
+                    ],
+                    cliffhanger: "Bagaimana nasib SD Muhammadiyah saat menghadapi lomba cerdas cermat melawan sekolah elit?"
+                }
+            }
+        ];
 
-// Load data dari localStorage jika tersedia, jika tidak gunakan defaultBooks
-let booksDatabase = JSON.parse(localStorage.getItem('lithook_books')) || defaultBooks;
-
-// Fungsi pembantu untuk menyimpan perubahan data ke localStorage
-function persistBooksData() {
-    localStorage.setItem('lithook_books', JSON.stringify(booksDatabase));
-}
-
-let isAdminLoggedIn = sessionStorage.getItem('simpa_admin_auth') === 'true';
-let html5QrCode = null;
-let activeTeaserTab = 'comic';
 
 // Initialization
 window.onload = function() {
